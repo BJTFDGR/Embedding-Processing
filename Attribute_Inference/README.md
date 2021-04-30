@@ -10,7 +10,6 @@ Output: Embeddings for sentences in citylist
 Total Number: Counter({9: 2281, 4: 1265, 1: 1173, 7: 1136, 2: 926, 5: 750, 3: 608, 8: 596})   8735 728
 sentences/embeddings
 
----
 2. get_embedding_airline_salad_bert.py
 
 File: Get embedding in paralell
