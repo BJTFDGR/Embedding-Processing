@@ -244,12 +244,12 @@ def train():
 
             with torch.no_grad(): 
                 if (i+1) == len(train_dataset):
-                    acc=AccuarcyComputeT3(outputs,labels)
+                    acc=AccuarcyCompute(outputs,labels)
                     print(epoch,":",acc)
                 if acc>0.75:
                     print(inputs,labels,loss,np.argmax(outputs.cpu().data.numpy(),1))
                 
-                mid=AccuarcyComputeT3(outputs,labels)
+                mid=AccuarcyCompute(outputs,labels)
                 if mid>0.5:
                     with open('5_layer_top_3_training_data.txt','a+') as f:
                         print("MID>0.5",mid,np.argmax(outputs.cpu().data.numpy(),1),labels)   
@@ -267,7 +267,7 @@ def train():
                 inputs = pt.autograd.Variable(inputs).cuda()
                 labels = pt.autograd.Variable(labels).cuda()
                 outputs = model(inputs)
-                mid=AccuarcyComputeT3(outputs,labels)
+                mid=AccuarcyCompute(outputs,labels)
                 if mid>0.5:
                     with open('5_layer_top_3_test_data.txt','a+') as f:
                         print("MID>0.5",mid,np.argmax(outputs.cpu().data.numpy(),1),labels)                
