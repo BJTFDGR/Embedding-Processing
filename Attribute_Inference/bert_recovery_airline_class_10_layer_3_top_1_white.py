@@ -4,25 +4,15 @@
 
 # coding: utf-8
 import wget
+import torch
 import os
 import matplotlib.pyplot as plt
-os.environ['CUDA_VISIBLE_DEVICES']='7'
-# If there's a GPU available...
-
-# print('Downloading dataset...')
-
-# # The URL for the dataset zip file.
-# url = 'https://nyu-mll.github.io/CoLA/cola_public_1.1.zip'
-
-# # Download the file (if we haven't already)
-# if not os.path.exists('./cola_public_1.1.zip'):
-#     wget.download(url, './cola_public_1.1.zip')
-
-import torch
+import pandas as pd
+from collections import Counter
+#os.environ['CUDA_VISIBLE_DEVICES']='7'
 
 # If there's a GPU available...
 if torch.cuda.is_available():    
-
     # Tell PyTorch to use the GPU.    
     device = torch.device("cuda")
 
@@ -36,7 +26,7 @@ else:
     device = torch.device("cpu")
 
 print('Downloading dataset...')
-import pandas as pd
+
 
 # Load the dataset into a pandas dataframe.
 df = pd.read_csv("./airline.csv")
@@ -56,10 +46,6 @@ for item in sentences:
             new_sentences.append(item[0:400])
             new_labels.append(citylist.index(city))
            
-
-
-import pandas as pd
-from collections import Counter
 result = Counter(new_labels)
 print(result)
 
@@ -67,19 +53,15 @@ print(result)
 from multiprocessing import Process
 from multiprocessing import cpu_count, Pool
 from itertools import chain
-import pandas as pd
 import numpy as np
 cores = cpu_count() # 4
 print(cores)
 
-import os
 length=len(new_sentences)
 n=12
 step=int(length/n)+1
 print(length,step)
 da,la=[],[]
-
-
 
 for i in range(0,length,step):
     embedding_i_1=torch.load( 'x_airline_bert_'+str(i+1)+'__.pt', map_location='cpu')
@@ -116,22 +98,8 @@ import torch as pt
 import torchvision as ptv
 import numpy as np
 
-# 定义全局变量
-n_epochs = 250     # epoch 的数目
-batch_size =48  # 决定每次读取多少图片
 
-
-# train_tensor = data[0:int(len(data)*0.1),:]
-# train_label_tensor = labels[0:int(len(data)*0.1)]
-# test_tensor = data[int(len(data)*0.1):len(data),:]
-# test_label_tensor = labels[int(len(data)*0.1):len(data)]
-
-# train_set = torch.utils.data.TensorDataset(train_tensor,train_label_tensor)
-# train_dataset = torch.utils.data.DataLoader(train_set, batch_size=batch_size,shuffle=True)
-# test_set = torch.utils.data.TensorDataset(test_tensor,test_label_tensor)
-# test_dataset = torch.utils.data.DataLoader(test_set, batch_size=batch_size,shuffle=True)
-        
-
+n_epochs = 250    
 dataset =  torch.utils.data.TensorDataset(data,labels)
 batch_size =48 
 validation_split = .7
@@ -241,7 +209,6 @@ def AccuarcyComputeT3(pred,label):
         return count/len(label)
 
 
-
 # accuarcy
 def AccuarcyCompute(pred,label):
     with torch.no_grad():
@@ -252,11 +219,6 @@ def AccuarcyCompute(pred,label):
         test_np = (np.argmax(pred,1) == label)
         test_np = np.float32(test_np)
         return np.mean(test_np)
-
-# test accuarcy
-# print(AccuarcyCompute(
-#     np.array([[1,10,6],[0,2,5]],dtype=np.float32),
-#     np.array([[1,2,8],[1,2,5]],dtype=np.float32)))
 
 
 training_data_list_sample,test_data_list_sample=[],[]
