@@ -115,7 +115,7 @@ def get_embedding(input_vector,i):
 
 ## If embedding is not prepared, then download that
 
-if os.path.exists('x2.pt'):
+if not os.path.exists('x2.pt'):
     get_embedding(idlist,2)
 embedding_i_1=torch.load('x2.pt')
 idlist=torch.load('y2.pt')
@@ -244,12 +244,12 @@ def train():
 
             with torch.no_grad(): 
                 if (i+1) == len(train_dataset):
-                    acc=AccuarcyCompute(outputs,labels)
+                    acc=AccuarcyComputeT3(outputs,labels)
                     print(epoch,":",acc)
                 if acc>0.75:
                     print(inputs,labels,loss,np.argmax(outputs.cpu().data.numpy(),1))
                 
-                mid=AccuarcyCompute(outputs,labels)
+                mid=AccuarcyComputeT3(outputs,labels)
                 if mid>0.5:
                     with open('5_layer_top_3_training_data.txt','a+') as f:
                         print("MID>0.5",mid,np.argmax(outputs.cpu().data.numpy(),1),labels)   
@@ -267,7 +267,7 @@ def train():
                 inputs = pt.autograd.Variable(inputs).cuda()
                 labels = pt.autograd.Variable(labels).cuda()
                 outputs = model(inputs)
-                mid=AccuarcyCompute(outputs,labels)
+                mid=AccuarcyComputeT3(outputs,labels)
                 if mid>0.5:
                     with open('5_layer_top_3_test_data.txt','a+') as f:
                         print("MID>0.5",mid,np.argmax(outputs.cpu().data.numpy(),1),labels)                
@@ -328,7 +328,7 @@ print(sum(i >0.4 for i in test_data_list_sample)) #13750 32000 780 2144
 k1, k2 = [], []
 print(sum(i > 0.6 for i in test_data_list_sample))
 for i in training_data_list_sample:
-    if i > 0.:
+    if i > 0.6:
         k1.append(i)
     else:
         k2.append(i)
