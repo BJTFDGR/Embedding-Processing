@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import pandas as pd
 import torch
 import time
@@ -10,11 +8,12 @@ from collections import Counter
 '''
 File: Get embedding in paralell
 Input: airline reviews
-Output: Embeddings for sentences with 'salad' in 
-        'x_saladairline_bert_'+str(i)+'_'+str(j)+'_.pt'
+Output: Embeddings for sentences in citylist 
+        'x_airline_bert_'+str(i)+'__.pt'
         original sentences
-        'y_saladairline_bert'+str(i)+'.pt'
-Total Number: 365 sentences
+        'y_airline_bert'+str(i)+'.pt'
+Total Number: Counter({9: 2281, 4: 1265, 1: 1173, 7: 1136, 2: 926, 5: 750, 3: 608, 8: 596})   8735 728
+sentences/embeddings
 '''
 
 # Load the dataset into a pandas dataframe.
@@ -24,26 +23,37 @@ df = pd.read_csv("./airline.csv")
 print('Number of training sentences: {:,}\n'.format(df.shape[0]))
 print('Index',df.axes)
 sentences= df['content'].values.tolist()     
+citylist=['shanghai','Toronto','Paris','Rome','Sydney','Dubai','bangkok','Singapore','Frankfurt','London']
 
-# Get sentences with salad
-city='salad'
-count=0
+
 new_sentences=[]
 new_labels=[]
 for item in sentences:
     if len(item)<100:continue
-    if city in item[0:800] or city.lower() in item[0:800]:
-        new_sentences.append(item[0:800])
-        new_labels.append(1)	
-        count+=1
-        if count>2000: break
+    for city in citylist:
+        if city in item[0:400] or city.lower() in item[0:400]:
+            new_sentences.append(item[0:400])
+            new_labels.append(citylist.index(city))
            
+
 result = Counter(new_labels)
 print(result)
 
-
+## Make get_embedding work in paralell mode   
+'''
+We can use pool or process to implement the paralell computing
+But the process is quite hard to set since the time usage for HPC is limited, 
+if the number of process function is few, each process will run beyond time limit
+if the number is many, it will take up all the resouce of HPC
+So we consider use pool to automaticlly allocate the process.
+Two problems occur in pool usage: 
+communication in poll may break in HPC after excuting a chunk of time and 
+Process assigned by pool may not go into function after a while 
+This requires me to first split the data into a couple of pieces and keep that speratly 
+When it finishs, use another function to combine them together.
+'''      
 def get_embedding(input_vector,i):
-    torch.save(input_vector, 'y_saladairline_bert'+str(i)+'.pt')
+    torch.save(input_vector, 'y_airline_bert'+str(i)+'.pt')
     print('Run task %s (%s)...'%(i, os.getpid()))
     start = time.time()
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
@@ -55,6 +65,7 @@ def get_embedding(input_vector,i):
     print(i,lengtha,step)
     for j in range(0,lengtha,step):
         subbatch=[]
+        if os.path.exists('x_airline_bert_'+str(i)+'_'+str(j)+'_.pt'):continue
         for input_text in input_vector[j:j+step]:
             #print('current,',i,j,len(input_vector[j:j+step]))
             if len(subbatch)%20==0: print(i,j,len(subbatch),len(input_vector))
@@ -87,12 +98,13 @@ def get_embedding(input_vector,i):
             except:
                 print('ERROR found in', input_text)
         print('SAVED',i,j)
-        torch.save(subbatch, 'x_saladairline_bert_'+str(i)+'_'+str(j)+'_.pt')        
+        torch.save(subbatch, 'x_airline_bert_'+str(i)+'_'+str(j)+'_.pt')        
     end = time.time()
     print('Task %s runs %0.2f seconds.' % (i, (end - start)))  
 
 
 from multiprocessing import Process
+
 from multiprocessing import cpu_count, Pool
 from itertools import chain
 import numpy as np
@@ -111,7 +123,7 @@ with Pool(8) as p:
 #    print('Parent process %s.' % os.getpid())
 #    p = multiprocessing.Pool(16)
     for i in range(0,length,step):
-        if 1==1:    
+        if not os.path.exists('x_airline_bert'+str(i+1)+'.pt'):    
             p.apply_async(get_embedding, args=(new_sentences[i:i+step],i+1,))
     print('Waiting for all subprocesses done...')
     p.close()
@@ -128,13 +140,13 @@ def orgnizefile(input_vector,i):
     print(i,lengtha,step)
     subbatch=[]
     for j in range(0,lengtha,step):        
-        subbatch=subbatch+ torch.load('x_saladairline_bert_'+str(i)+'_'+str(j)+'_.pt', map_location='cpu')
+        subbatch=subbatch+ torch.load('x_airline_bert_'+str(i)+'_'+str(j)+'_.pt', map_location='cpu')
 
     print('SAVED',i)
-    torch.save(subbatch, 'x_saladairline_bert_'+str(i)+'__.pt')        
+    torch.save(subbatch, 'x_airline_bert_'+str(i)+'__.pt')        
     end = time.time()
     print('Task %s runs %0.2f seconds.' % (i, (end - start)))
 
 for i in range(0,length,step):
   orgnizefile(new_sentences[i:i+step],i+1)
->>>>>>> 3c89b31d140a946a42b330f277b4129a265c1345
+
