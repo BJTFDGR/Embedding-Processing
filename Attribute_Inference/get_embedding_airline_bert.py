@@ -12,6 +12,7 @@ Output: Embeddings for sentences with 'salad' in
         'x_saladairline_bert_'+str(i)+'_'+str(j)+'_.pt'
         original sentences
         'y_saladairline_bert'+str(i)+'.pt'
+Total Number: 365 sentences
 '''
 
 # Load the dataset into a pandas dataframe.
