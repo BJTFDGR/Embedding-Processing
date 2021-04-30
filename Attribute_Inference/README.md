@@ -14,7 +14,6 @@ sentences/embeddings
 
 ---
 ---
----
 
 2. get_embedding_airline_salad_bert.py
 
